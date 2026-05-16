@@ -8,7 +8,7 @@ client = TestClient(app)
 def test_register_success():
     response = client.post("/auth/register", json={
         "name": "Sneha",
-        "email": "newuser@test.com",
+        "email": "brandnewuserr@test.com",
         "password": "test1234"
     })
     assert response.status_code == 201
@@ -89,3 +89,26 @@ def test_get_profile():
     response = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     assert response.json()["email"] == "profile@test.com"
+
+def test_get_profile_unauthorized():
+    response = client.get("/auth/me")
+    assert response.status_code == 401
+
+
+def test_update_profile():
+    client.post("/auth/register", json={
+        "name": "Sneha",
+        "email": "updateprofile@test.com",
+        "password": "test1234"
+    })
+    login = client.post("/auth/login", json={
+        "email": "updateprofile@test.com",
+        "password": "test1234"
+    })
+    token = login.json()["access_token"]
+    response = client.put("/users/profile",
+        json={"name": "Sneha Patidar"},
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    assert response.json()["message"] == "Profile updated successfully"    
